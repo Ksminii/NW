@@ -2,6 +2,7 @@
 
 ## Directory Structure
 
+```
   NW/
   ├── Basic_implementations/          # Basic NW algorithm implementations
   │   ├── nw_linear.c                # C implementation (linear gap)
@@ -14,7 +15,7 @@
   ├── check_validation/               # Validation tools
   │   └── validate.py                # Validate alignment results with BioPython
   └── README.md
-
+```
 ## Usage
 
 ### Basic Implementations
