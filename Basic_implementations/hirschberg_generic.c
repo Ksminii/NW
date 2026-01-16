@@ -1,18 +1,3 @@
-/*
-
- 사용법 요약
-
-  # 아무 두 FASTA 파일로 정렬 가능
-  ./hirschberg_generic seq1.fasta seq2.fasta
-
-  # 예시
-  ./hirschberg_generic arabidopsis.fasta tobacco.fasta
-  ./hirschberg_generic human.fasta mouse.fasta
-
-
-*/
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
