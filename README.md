@@ -41,9 +41,10 @@
 
   cd Basic_implementations
   python3 nw_linear.py seq1.fasta seq2.fasta
+ ```
 
-  Accelerated Implementations
-
+### Accelerated Implementations
+```bash
   OpenCL - Generic
 
   cd Accerlerated_implementations
@@ -66,8 +67,9 @@
 
   # Run
   ./nw_cuda_generic seq1.fasta seq2.fasta
-
-  Validate Results
-
+```
+### Validate Results
+```bash
   cd check_validation
   python3 validate.py
+```
