@@ -1,7 +1,4 @@
-# Needleman-Wunsch CUDA Implementation
-
-
-### 전체 흐름
+### Overview
 
 ```
 [Host (CPU)]                           [Device (GPU)]
