@@ -184,7 +184,7 @@ AlignmentResult needleman_wunsch_cuda(char *a, char *b) {
     CUDA_CHECK(cudaMemcpy(d_seq_b, b, sizeof(char) * lenB, cudaMemcpyHostToDevice));
     CUDA_CHECK(cudaMemcpy(d_dp_matrix, dp_matrix, sizeof(int) * dp_matrix_size, cudaMemcpyHostToDevice));
 
-    // [핵심] 대각선(Wavefront) 루프
+    // 대각선(Wavefront) 루프
     // DP 테이블 채우기는 데이터 의존성 때문에 한 번에 병렬화할 수 없음
     // 하지만 대각선(k) 상의 셀들은 서로 의존성이 없으므로 동시에 계산 가능
     for (int k = 1; k <= lenA + lenB; k++) {
