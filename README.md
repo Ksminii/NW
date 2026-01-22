@@ -20,8 +20,9 @@
 
 ### Basic Implementations
 
-#### C - Linear Gap
+#### 
   ```bash
+  C - Linear Gap
   cd Basic_implementations
   gcc -O3 nw_linear.c -o nw_linear
   ./nw_linear seq1.fasta seq2.fasta
