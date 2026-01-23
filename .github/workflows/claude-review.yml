@@ -40,14 +40,20 @@ jobs:
           echo "Files changed:"
           cat changed_files.txt
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install anthropic
+
       - name: Review with Claude
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref || 'main' }}
         run: |
-          echo "Claude code review would run here"
-          echo "Changed files:"
-          cat changed_files.txt
-          echo ""
-          echo "Note: You need to add ANTHROPIC_API_KEY secret and implement the actual Claude API call"
-          echo "For now, this workflow just shows the changed files"
+          python .github/scripts/claude_review.py
