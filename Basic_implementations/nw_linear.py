@@ -4,6 +4,7 @@ import numpy as np
 import os
 import multiprocessing as mp
 
+# Scoring parameters for Needleman-Wunsch algorithm
 MATCH = 1
 MISMATCH = -1
 GAP_OPEN = -10
