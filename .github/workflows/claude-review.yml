@@ -49,11 +49,19 @@ jobs:
         run: |
           pip install anthropic
 
-      - name: Review with Claude
+      - name: Code Quality Analysis
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref || 'main' }}
         run: |
-          python .github/scripts/claude_review.py
+          python .github/scripts/code_quality_check.py
+
+      - name: Upload Quality Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-report
+          path: quality_report.json
+          retention-days: 30
