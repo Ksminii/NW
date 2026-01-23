@@ -1,0 +1,53 @@
+name: Claude Code Review
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} > changed_files.txt
+          else
+            git diff --name-only HEAD~1 HEAD > changed_files.txt
+          fi
+          echo "Files changed:"
+          cat changed_files.txt
+
+      - name: Review with Claude
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "Claude code review would run here"
+          echo "Changed files:"
+          cat changed_files.txt
+          echo ""
+          echo "Note: You need to add ANTHROPIC_API_KEY secret and implement the actual Claude API call"
+          echo "For now, this workflow just shows the changed files"
