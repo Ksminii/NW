@@ -75,3 +75,6 @@
   cd check_validation
   python3 validate.py
 ```
+
+## Testing
+This project includes automated code review using Claude AI on every push and pull request.
