@@ -1,0 +1,118 @@
+#!/bin/bash
+# Pre-commit hook for code quality validation
+
+echo "🔍 Running code quality validation..."
+
+# Get staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(c|h|py|js|ts|cpp|java|go)$')
+
+if [ -z "$STAGED_FILES" ]; then
+    echo "✅ No code files to validate"
+    exit 0
+fi
+
+# Create temp file for results
+TEMP_DIR=$(mktemp -d)
+REPORT_FILE="$TEMP_DIR/quality_report.txt"
+
+echo "📋 Analyzing $(echo "$STAGED_FILES" | wc -l | tr -d ' ') file(s)..."
+echo ""
+
+# Run quality check on each file
+HAS_ISSUES=false
+
+for FILE in $STAGED_FILES; do
+    echo "Checking: $FILE"
+
+    # Get file content
+    CONTENT=$(git show ":$FILE")
+
+    # Call Claude API for quality check
+    if [ ! -z "$ANTHROPIC_API_KEY" ]; then
+        ANALYSIS=$(python3 - <<EOF
+import anthropic
+import sys
+import os
+
+client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+
+content = """$CONTENT"""
+file_path = "$FILE"
+
+prompt = f"""Quick code quality check for: {file_path}
+
+Rate this code on a scale of 1-10 and identify CRITICAL issues only.
+
+Code:
+\`\`\`
+{content[:3000]}
+\`\`\`
+
+Respond in this format:
+SCORE: X/10
+CRITICAL: [List only blocking issues, or "None"]
+SUGGESTIONS: [Top 2-3 improvements]
+
+Be concise."""
+
+try:
+    message = client.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        max_tokens=500,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    print(message.content[0].text)
+except Exception as e:
+    print(f"Error: {e}")
+    sys.exit(1)
+EOF
+        )
+
+        echo "$ANALYSIS" >> "$REPORT_FILE"
+        echo "---" >> "$REPORT_FILE"
+
+        # Check if score is below threshold
+        SCORE=$(echo "$ANALYSIS" | grep -oE "SCORE: [0-9]+/10" | grep -oE "[0-9]+")
+        if [ ! -z "$SCORE" ] && [ "$SCORE" -lt 6 ]; then
+            HAS_ISSUES=true
+            echo "⚠️  Quality score: $SCORE/10 (below threshold)"
+        else
+            echo "✅ Quality score: $SCORE/10"
+        fi
+
+        # Check for critical issues
+        if echo "$ANALYSIS" | grep -q "CRITICAL:" && ! echo "$ANALYSIS" | grep -q "CRITICAL: None"; then
+            HAS_ISSUES=true
+            echo "❌ Critical issues found!"
+        fi
+    else
+        echo "⚠️  ANTHROPIC_API_KEY not set, skipping AI validation"
+    fi
+
+    echo ""
+done
+
+# Show full report
+if [ -f "$REPORT_FILE" ]; then
+    echo "📄 Full Quality Report:"
+    echo "===================="
+    cat "$REPORT_FILE"
+    echo "===================="
+fi
+
+# Clean up
+rm -rf "$TEMP_DIR"
+
+# Decide whether to allow commit
+if [ "$HAS_ISSUES" = true ]; then
+    echo ""
+    echo "❌ Code quality check failed!"
+    echo "Please review the issues above."
+    echo ""
+    echo "To commit anyway, use: git commit --no-verify"
+    exit 1
+fi
+
+echo ""
+echo "✅ Code quality validation passed!"
+exit 0

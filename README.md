@@ -78,3 +78,6 @@
 
 ## Testing
 This project includes automated code review using Claude AI on every push and pull request.
+
+### Pre-commit Quality Check
+Code quality is automatically validated before each commit using AI-powered analysis.
